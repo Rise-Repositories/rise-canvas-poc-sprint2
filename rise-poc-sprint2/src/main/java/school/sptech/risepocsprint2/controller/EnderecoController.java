@@ -6,13 +6,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestClient;
+import school.sptech.risepocsprint2.ListaObj;
 import school.sptech.risepocsprint2.dto.EnderecoListagemDto;
 import school.sptech.risepocsprint2.dto.EnderecoMapper;
 import school.sptech.risepocsprint2.entity.Endereco;
 import school.sptech.risepocsprint2.repository.EnderecoRepository;
 import school.sptech.risepocsprint2.dto.*;
 
-import java.util.List;
 import java.util.Optional;
 
 @RestController

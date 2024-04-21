@@ -1,4 +1,4 @@
-package school.sptech.risepocsprint2.controller;
+package school.sptech.risepocsprint2;
 
 import school.sptech.risepocsprint2.entity.Endereco;
 
