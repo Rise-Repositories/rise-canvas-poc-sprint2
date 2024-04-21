@@ -37,7 +37,7 @@ public class EnderecoController {
         return ResponseEntity.ok(enderecosDto);
     }
 
-    @GetMapping("/buscar-endereco")
+    @GetMapping("/consulta")
     public ResponseEntity<EnderecoListagemDto> buscarEndereco(@RequestParam String cep) {
 
         RestClient client = RestClient.builder()
@@ -89,7 +89,7 @@ public class EnderecoController {
         return ResponseEntity.ok(resposta);
     }
 
-    @PostMapping("/por-cep/{cep}")
+    @PostMapping("/criar-por-cep/{cep}")
     public ResponseEntity<EnderecoListagemDto> criarPorCep(@PathVariable String cep) {
         EnderecoCriacaoDto dto = EnderecoMapper.toEnderecoCriacaoDto(buscarEndereco(cep).getBody());
         if (dto == null) {
@@ -98,46 +98,30 @@ public class EnderecoController {
         return criar(dto);
     }
 
-    @GetMapping("/buscar-endereco-por-cep-cadastrado")
+    @GetMapping("/consulta-por-cep-cadastrado")
     public ResponseEntity<EnderecoListagemDto> buscar(@RequestParam String cep) {
         ListaObj<Endereco> enderecos = new ListaObj (repository.findAll());
-        if (enderecos.size() == 0) {
-            return ResponseEntity.noContent().build();
-        }
-        int[] ceps = new int[enderecos.size()];
 
-        for (int i = 0; i < enderecos.size(); i++) {
-            String cepFormat = enderecos.get(i).getCep().replaceAll("\\D+","");
-            Integer cepInteiro = Integer.parseInt(cepFormat);
-            ceps[i] = cepInteiro;
+        quickSort(enderecos, 0, enderecos.size() - 1);
+        int ind = buscaBinaria(enderecos, cep);
+
+        if (ind != -1) {
+            return ResponseEntity.ok(EnderecoMapper.toListagemDto(enderecos.get(ind)));
         }
-        quickSort(ceps, 0, ceps.length-1);
-        int busca = buscaBinaria(ceps, Integer.parseInt(cep));
-        if (busca == -1) {
-            return ResponseEntity.noContent().build();
-        }
-        int cepEncontrado = ceps[busca];
-        for (int i = 0; i < enderecos.size(); i++) {
-            String cepFormat = enderecos.get(i).getCep().replaceAll("\\D+","");
-            Integer cepInteiro = Integer.parseInt(cepFormat);
-            if (cepInteiro == cepEncontrado) {
-                return ResponseEntity.ok(EnderecoMapper.toListagemDto(enderecos.get(i)));
-            }
-        }
-        return null;
+        return ResponseEntity.notFound().build();
     }
 
-    public int buscaBinaria(int[] v, int busca) {
+    public int buscaBinaria(ListaObj<Endereco> v, String busca) {
         int indInicio = 0;
-        int indFim = v.length - 1;
+        int indFim = v.size() - 1;
         int indMeio;
 
         while (indInicio <= indFim) {
             indMeio = (indInicio + indFim) / 2;
 
-            if (v[indMeio] == busca) {
+            if (v.get(indMeio).getCep().compareTo(busca) == 0) {
                 return indMeio;
-            } else if (v[indMeio] > busca) {
+            } else if (v.get(indMeio).getCep().compareTo(busca) > 0) {
                 indFim = indMeio - 1;
             } else {
                 indInicio = indMeio + 1;
@@ -146,22 +130,23 @@ public class EnderecoController {
         return -1;
     }
 
-    public static void quickSort(int[] v, int indInicio, int indFim) {
-        int i, j, pivo;
+    public static void quickSort(ListaObj<Endereco> v, int indInicio, int indFim) {
+        int i, j;
         i = indInicio;
         j = indFim;
-        pivo = v[(indFim + indInicio) / 2];
+        String pivo = ((Endereco) v.get((indFim + indInicio) / 2)).getCep();
+
         while (i <= j) {
-            while (i < indFim && v[i] < pivo) {
+            while (i < indFim && ((Endereco) v.get(i)).getCep().compareTo(pivo) < 0) {
                 i++;
             }
-            while (j > indInicio && v[j] > pivo) {
+            while (j > indInicio && ((Endereco) v.get(j)).getCep().compareTo(pivo) > 0) {
                 j--;
             }
             if (i <= j) {
-                int aux = v[i];
-                v[i] = v[j];
-                v[j] = aux;
+                Endereco aux = v.get(i);
+                v.set(i, v.get(j));
+                v.set(j, aux);
                 i++;
                 j--;
             }
