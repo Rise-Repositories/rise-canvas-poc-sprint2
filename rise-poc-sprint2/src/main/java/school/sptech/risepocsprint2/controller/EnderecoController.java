@@ -102,6 +102,10 @@ public class EnderecoController {
     public ResponseEntity<EnderecoListagemDto> buscar(@RequestParam String cep) {
         ListaObj<Endereco> enderecos = new ListaObj (repository.findAll());
 
+        if (enderecos.size() == 0) {
+            return ResponseEntity.notFound().build();
+        }
+
         quickSort(enderecos, 0, enderecos.size() - 1);
         int ind = buscaBinaria(enderecos, cep);
 
